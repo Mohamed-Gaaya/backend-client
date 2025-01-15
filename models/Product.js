@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const productSchema = new mongoose.Schema({
   _id: {
     type: Number,
-    required: true
+    required: true,
   },
   name: {
     type: String,
@@ -24,7 +24,7 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   images: {
-    type: [String], // Array of image URLs or filenames
+    type: [String],
     required: true,
   },
   hasPromo: {
@@ -34,12 +34,12 @@ const productSchema = new mongoose.Schema({
   originalPrice: {
     type: Number,
     min: 0,
-    default: null, // Only needed if `hasPromo` is true
+    default: null,
   },
   promoPrice: {
     type: Number,
     min: 0,
-    default: null, // Only needed if `hasPromo` is true
+    default: null,
   },
   servings: {
     type: Number,
@@ -50,8 +50,11 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  uploadedDate: {
+    type: Date,
+    default: Date.now, // Automatically sets to the current date
+  },
 }, { timestamps: true });
-
 // Check if the model already exists to prevent overwriting it
 const Product = mongoose.models.Product || mongoose.model("Product", productSchema);
 

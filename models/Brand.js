@@ -13,6 +13,10 @@ const brandSchema = new mongoose.Schema({
   logo: {
     type: String, // File path or URL to the logo image
   },
+  uploadedAt: {
+    type: Date,
+    default: Date.now, // Automatically sets the current timestamp
+  },
 });
 
 // Check if the model already exists to prevent overwriting it

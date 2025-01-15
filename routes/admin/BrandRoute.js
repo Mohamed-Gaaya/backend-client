@@ -72,8 +72,10 @@ const getNextSequence = async (sequenceName) => {
 
 // @route   POST /api/brands/add
 // @desc    Add a new brand
+// @route   POST /api/brands/add
+// @desc    Add a new brand
 router.post("/add", upload.single("image"), async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, uploadedAt } = req.body; // Optionally allow overriding uploadedAt
   const logo = req.file ? req.file.filename : null;
 
   try {
@@ -87,14 +89,15 @@ router.post("/add", upload.single("image"), async (req, res) => {
     await initCounter();
 
     // Get the next sequential ID for the brand
-    const nextId = await getNextSequence("brand"); // Using the getNextSequence function
+    const nextId = await getNextSequence("brand");
 
     // Create a new brand
     const newBrand = new Brand({
-      _id: nextId, // Assign the auto-incremented ID
+      _id: nextId,
       name,
       description,
       logo,
+      uploadedAt: uploadedAt || Date.now(), // Use provided value or default to now
     });
 
     await newBrand.save();
@@ -119,10 +122,13 @@ router.get("/", async (req, res) => {
 
 
 
+
+// @route   PUT /api/brands/:id
+// @desc    Update a brand
 // @route   PUT /api/brands/:id
 // @desc    Update a brand
 router.put("/:id", upload.single("image"), async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description, uploadedAt } = req.body;
   const logo = req.file ? req.file.filename : undefined;
 
   try {
@@ -135,7 +141,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     // Update the brand
     const updatedBrand = await Brand.findByIdAndUpdate(
       req.params.id,
-      { name, description, ...(logo && { logo }) }, // Only update logo if it's provided
+      { name, description, ...(logo && { logo }), ...(uploadedAt && { uploadedAt }) },
       { new: true, runValidators: true }
     );
 
@@ -146,6 +152,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     res.status(500).json({ error: "Failed to update brand", details: err.message });
   }
 });
+
 
 // @route   DELETE /api/brands/:id
 // @desc    Delete a brand

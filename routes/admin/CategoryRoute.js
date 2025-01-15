@@ -103,7 +103,8 @@ router.post("/add", upload.single("image"), async (req, res) => {
 // @desc    Get all categories
 router.get("/", async (req, res) => {
   try {
-    const categories = await Category.find();
+    // Fetch categories sorted by createdAt in descending order
+    const categories = await Category.find().sort({ createdAt: -1 });
     res.status(200).json({ categories });
   } catch (err) {
     console.error("Error fetching categories:", err);

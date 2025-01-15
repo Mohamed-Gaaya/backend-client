@@ -10,7 +10,10 @@ const categorySchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-});
+  
+},
+{ timestamps: true }
+);
 
 // Check if the model already exists to prevent overwriting it
 const Category = mongoose.models.Category || mongoose.model("Category", categorySchema);
