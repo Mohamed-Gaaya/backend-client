@@ -123,33 +123,60 @@ router.get("/", async (req, res) => {
 
 
 
-// @route   PUT /api/brands/:id
-// @desc    Update a brand
-// @route   PUT /api/brands/:id
-// @desc    Update a brand
+
 router.put("/:id", upload.single("image"), async (req, res) => {
   const { name, description, uploadedAt } = req.body;
   const logo = req.file ? req.file.filename : undefined;
 
   try {
-    // Check if another brand with the same name exists
-    const existingBrand = await Brand.findOne({ name });
-    if (existingBrand && existingBrand._id.toString() !== req.params.id) {
-      return res.status(400).json({ error: "Brand name already exists" });
+    // First check if the brand exists
+    const brandToUpdate = await Brand.findById(req.params.id);
+    if (!brandToUpdate) {
+      return res.status(404).json({ error: "Brand not found" });
+    }
+
+    // Only check for duplicate name if name is being changed
+    if (name !== brandToUpdate.name) {
+      const existingBrand = await Brand.findOne({ name });
+      if (existingBrand) {
+        return res.status(400).json({ error: "Brand name already exists" });
+      }
+    }
+
+    // Create update object
+    const updateData = {
+      ...(name && { name }),
+      ...(description && { description }),
+      ...(uploadedAt && { uploadedAt })
+    };
+
+    // Only add logo if new file was uploaded
+    if (logo) {
+      updateData.logo = logo;
     }
 
     // Update the brand
     const updatedBrand = await Brand.findByIdAndUpdate(
       req.params.id,
-      { name, description, ...(logo && { logo }), ...(uploadedAt && { uploadedAt }) },
+      updateData,
       { new: true, runValidators: true }
     );
 
-    if (!updatedBrand) return res.status(404).json({ error: "Brand not found" });
-    res.status(200).json({ message: "Brand updated successfully", brand: updatedBrand });
+    res.status(200).json({ 
+      message: "Brand updated successfully", 
+      brand: updatedBrand 
+    });
+
   } catch (err) {
     console.error("Error updating brand:", err);
-    res.status(500).json({ error: "Failed to update brand", details: err.message });
+    // Send more specific error messages
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({ error: "Validation Error", details: err.message });
+    }
+    if (err.name === 'CastError') {
+      return res.status(400).json({ error: "Invalid Brand ID format" });
+    }
+    res.status(500).json({ error: "Server error while updating brand" });
   }
 });
 
