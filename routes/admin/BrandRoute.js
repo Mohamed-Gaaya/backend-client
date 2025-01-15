@@ -74,7 +74,7 @@ const getNextSequence = async (sequenceName) => {
 // @desc    Add a new brand
 router.post("/add", upload.single("image"), async (req, res) => {
   const { name, description } = req.body;
-  const logo = req.file ? req.file.path : null;
+  const logo = req.file ? req.file.filename : null;
 
   try {
     // Check if the brand already exists
@@ -123,7 +123,7 @@ router.get("/", async (req, res) => {
 // @desc    Update a brand
 router.put("/:id", upload.single("image"), async (req, res) => {
   const { name, description } = req.body;
-  const logo = req.file ? req.file.path : undefined;
+  const logo = req.file ? req.file.filename : undefined;
 
   try {
     // Check if another brand with the same name exists
