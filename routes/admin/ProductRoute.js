@@ -121,6 +121,24 @@ router.post("/add", upload.array("image", 5), async (req, res) => {
     res.status(500).json({ error: "Server error", details: err.message });
   }
 });
+// Add this route to your existing product routes file
+// @route   GET /api/products/:id
+// @desc    Get a single product by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.status(200).json({ product });
+  } catch (err) {
+    console.error("Error fetching product:", err);
+    res.status(500).json({ error: "Failed to fetch product", details: err.message });
+  }
+});
+
 router.get("/", async (req, res) => {
   try {
     const {
@@ -198,10 +216,10 @@ router.put("/:id", upload.array("image", 5), async (req, res) => {
   const newImages = req.files ? req.files.map((file) => `/uploads/${file.filename}`) : [];
 
   try {
-    const existingProduct = await Product.findOne({ name });
-    if (existingProduct && existingProduct._id.toString() !== req.params.id) {
-      return res.status(400).json({ error: "Product name already exists" });
-    }
+    const existingProduct = await Product.findById(req.params.id);
+if (!existingProduct) {
+  return res.status(404).json({ error: "Product not found" });
+}
 
     const updateData = {
       name,
