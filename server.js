@@ -20,9 +20,13 @@ mongoose.connect('mongodb://localhost:27017/yoda', {
 const categoryRoute = require('./routes/admin/CategoryRoute'); // Adjust the path if necessary
 const productRoute = require('./routes/admin/ProductRoute');
 const brandRoute = require('./routes/admin/BrandRoute');
+const clothesRoute = require('./routes/admin/ClothesRoute');
+const accessoriesRoute = require('./routes/admin/AccessoriesRoute');
 
 app.use("/api/categories", categoryRoute);
 app.use("/api/products", productRoute);
+app.use("/api/clothes", clothesRoute);
+app.use("/api/accessories", accessoriesRoute);
 app.use("/api/brands", brandRoute);
 app.use("/uploads", express.static("uploads"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
