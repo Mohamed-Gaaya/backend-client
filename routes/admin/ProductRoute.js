@@ -135,7 +135,7 @@ router.put("/:id", upload.array("images", 5), async (req, res) => {
       name,
       price,
       category,
-      brand,
+      brand, // This could be either brand ID or name
       hasPromo,
       promoPrice,
       originalPrice,
@@ -147,28 +147,28 @@ router.put("/:id", upload.array("images", 5), async (req, res) => {
       stock,
     } = req.body;
 
+    // Find the brand document to get its name
+    let brandName = brand;
+    if (brand && brand.match(/^[0-9a-fA-F]{24}$/)) {
+      const brandDoc = await Brand.findById(brand);
+      if (brandDoc) {
+        brandName = brandDoc.name;
+      }
+    }
+
     const newImages = req.files ? req.files.map((file) => `/uploads/${file.filename}`) : [];
 
     // Parse flavours if it's sent as a string
     const parsedFlavours = typeof flavours === "string" ? JSON.parse(flavours) : flavours;
 
-    // Validate flavours
-    if (parsedFlavours && (!Array.isArray(parsedFlavours) || parsedFlavours.length > 10)) {
-      return res.status(400).json({ error: "You can only add up to 10 flavours." });
-    }
-
     // Parse sizes if it's sent as a string
     const parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
-    // Validate size
-    if (parsedSizes && (!Array.isArray(parsedSizes) || parsedSizes.length > 5)) {
-      return res.status(400).json({ error: "You can only add up to 5 sizes." });
-    }
 
     const updateData = {
       ...(name && { name }),
       ...(price && { price: Number(price) }),
       ...(category && { category }),
-      ...(brand && { brand }),
+      ...(brandName && { brand: brandName }), // Store brand name instead of ID
       ...(hasPromo && { hasPromo: hasPromo === "true" }),
       ...(promoPrice && { promoPrice: Number(promoPrice) }),
       ...(originalPrice && { originalPrice: Number(originalPrice) }),
