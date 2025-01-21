@@ -43,18 +43,46 @@ const productSchema = new mongoose.Schema({
   },
   servings: {
     type: Number,
-    required: true,
     min: 1,
   },
-  description: {
+  shortDescription: {
     type: String,
     required: true,
+  },
+  longdescription: {
+    type: String,
+  },
+  flavours: {
+    type: [String],
+    validate: {
+      validator: function (v) {
+        return v.length <= 10; // Ensure that no more than 10 flavours are added
+      },
+      message: "You can only add up to 10 flavours.",
+    },
+  },
+  size: {
+    type: [String],
+    required: true,
+    validate: {
+      validator: function (v) {
+        return v.length <= 5; // Ensure that no more than 5 sizes are added
+      },
+      message: "You can only add up to 5 sizes.",
+    },
+  },
+  stock: {
+    type: Number,
+    required: true,
+    min: 0,
+    default: 0, // Default value for stock is set to 0
   },
   uploadedDate: {
     type: Date,
     default: Date.now, // Automatically sets to the current date
   },
 }, { timestamps: true });
+
 // Check if the model already exists to prevent overwriting it
 const Product = mongoose.models.Product || mongoose.model("Product", productSchema);
 
