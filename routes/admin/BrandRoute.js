@@ -109,16 +109,19 @@ router.post("/add", upload.single("image"), async (req, res) => {
 });
 
 // @route   GET /api/brands
-// @desc    Get all brands
+// @desc    Get all brands sorted by last added
 router.get("/", async (req, res) => {
   try {
-    const brands = await Brand.find();
+    // Sort by `uploadedAt` in descending order
+    const brands = await Brand.find().sort({ uploadedAt: -1 }).lean();
     res.status(200).json({ brands });
   } catch (err) {
     console.error("Error fetching brands:", err);
     res.status(500).json({ error: "Failed to fetch brands", details: err.message });
   }
 });
+
+
 
 
 

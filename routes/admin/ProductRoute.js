@@ -235,7 +235,26 @@ router.get("/:id", async (req, res) => {
 });
 
 // @route   GET /api/products
-// @desc    Get all products with optional filtering, sorting by recent uploads, and pagination
+// @desc    Get all products with optional filtering, sorting, and pagination
+// @route   GET /api/products/:id
+// @desc    Get a single product by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id).lean();
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.status(200).json({ product });
+  } catch (err) {
+    console.error("Error fetching product:", err);
+    res.status(500).json({ error: "Failed to fetch product", details: err.message });
+  }
+});
+
+// @route   GET /api/products
+// @desc    Get all products with optional filtering, sorting, and pagination
 router.get("/", async (req, res) => {
   try {
     const {
@@ -246,8 +265,10 @@ router.get("/", async (req, res) => {
       maxPrice,
       flavours,
       sizes,
+      sortBy = "name",
+      sortOrder = "asc",
       page = 1,
-      limit = 10,
+      limit = 1000,
     } = req.query;
 
     // Build filter object
@@ -266,12 +287,15 @@ router.get("/", async (req, res) => {
     // Calculate skip value for pagination
     const skip = (Number(page) - 1) * Number(limit);
 
+    // Sort by uploadedDate in descending order
+    const sort = { uploadedDate: -1 };
+
     // Get total count for pagination
     const total = await Product.countDocuments(filter);
 
-    // Execute query with sorting by `uploadedDate` (most recent first)
+    // Execute query with pagination
     const products = await Product.find(filter)
-      .sort({ uploadedDate: -1 }) // Sort by `uploadedDate` in descending order
+      .sort(sort)
       .skip(skip)
       .limit(Number(limit))
       .select(
@@ -292,7 +316,6 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch products", details: err.message });
   }
 });
-
 
 
 module.exports = router;
