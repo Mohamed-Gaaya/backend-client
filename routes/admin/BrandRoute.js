@@ -122,14 +122,11 @@ router.get("/", async (req, res) => {
 });
 
 
-
-
-
-
-
 router.put("/:id", upload.single("image"), async (req, res) => {
   const { name, description, uploadedAt } = req.body;
   const logo = req.file ? req.file.filename : undefined;
+  console.log("Received data:", req.body);
+  console.log("Received sizes:", req.body.size);
 
   try {
     // First check if the brand exists

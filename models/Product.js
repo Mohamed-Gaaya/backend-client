@@ -61,7 +61,7 @@ const productSchema = new mongoose.Schema({
       message: "You can only add up to 10 flavours.",
     },
   },
-  size: {
+  sizes: {
     type: [String],
     required: true,
     validate: {
