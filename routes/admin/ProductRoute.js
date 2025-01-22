@@ -61,13 +61,14 @@ router.post("/add", upload.array("image", 5), async (req, res) => {
       name,
       price,
       category,
+      subCategory,
       brand,
       hasPromo,
       promoPrice,
       originalPrice,
       servings,
       shortDescription,
-      longdescription,
+      longDescription,
       flavours,
       sizes,
       stock,
@@ -108,13 +109,14 @@ router.post("/add", upload.array("image", 5), async (req, res) => {
       name,
       price: parsedPrice,
       category,
+      subCategory: subCategory || null,
       brand,
       hasPromo: hasPromo === "true",
       promoPrice: parsedPromoPrice,
       originalPrice: parsedOriginalPrice,
       servings: servings ? Number(servings) : undefined,
       shortDescription,
-      longdescription,
+      longDescription,
       flavours: parsedFlavours,
       sizes: parsedSizes,
       stock: Number(stock),
@@ -135,67 +137,61 @@ router.put("/:id", upload.array("images", 5), async (req, res) => {
       name,
       price,
       category,
-      brand, // This could be either brand ID or name
+      subCategory,
+      brand,
       hasPromo,
       promoPrice,
       originalPrice,
       servings,
       shortDescription,
-      longdescription,
+      longDescription,
       flavours,
       sizes,
       stock,
     } = req.body;
 
-    // Find the brand document to get its name
-    let brandName = brand;
-    if (brand && brand.match(/^[0-9a-fA-F]{24}$/)) {
-      const brandDoc = await Brand.findById(brand);
-      if (brandDoc) {
-        brandName = brandDoc.name;
-      }
-    }
-
-    const newImages = req.files ? req.files.map((file) => `/uploads/${file.filename}`) : [];
-
-    // Parse flavours if it's sent as a string
-    const parsedFlavours = typeof flavours === "string" ? JSON.parse(flavours) : flavours;
-
-    // Parse sizes if it's sent as a string
-    const parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
-
     const updateData = {
       ...(name && { name }),
       ...(price && { price: Number(price) }),
       ...(category && { category }),
-      ...(brandName && { brand: brandName }), // Store brand name instead of ID
-      ...(hasPromo && { hasPromo: hasPromo === "true" }),
-      ...(promoPrice && { promoPrice: Number(promoPrice) }),
-      ...(originalPrice && { originalPrice: Number(originalPrice) }),
+      ...(subCategory && { subCategory }),
+      ...(brand && { brand }),
+      ...(hasPromo === 'true' && { 
+        hasPromo: true,
+        promoPrice: Number(promoPrice),
+        originalPrice: Number(originalPrice)
+      }),
       ...(servings && { servings: Number(servings) }),
       ...(shortDescription && { shortDescription }),
-      ...(longdescription && { longdescription }),
-      ...(parsedFlavours && { flavours: parsedFlavours }),
-      ...(parsedSizes && { sizes: parsedSizes }),
-      ...(stock !== undefined && { stock: Number(stock) }),
-      ...(newImages.length && { images: newImages }),
+      ...(longDescription && { longDescription }),
+      ...(sizes && { sizes: typeof sizes === 'string' ? JSON.parse(sizes) : sizes }),
+      ...(flavours && { flavours: typeof flavours === 'string' ? JSON.parse(flavours) : flavours }),
+      ...(stock !== undefined && { stock: Number(stock) })
     };
 
-    const updatedProduct = await Product.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
 
     if (!updatedProduct) {
       return res.status(404).json({ error: "Product not found" });
     }
 
     res.status(200).json({ message: "Product updated successfully", product: updatedProduct });
+
   } catch (err) {
-    res.status(500).json({ error: "Failed to update product", details: err.message });
+    res.status(500).json({
+      error: "Failed to update product",
+      details: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 });
-
 // @route DELETE /api/products/:id
 router.delete("/:id", async (req, res) => {
   try {
