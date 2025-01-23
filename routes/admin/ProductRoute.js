@@ -254,6 +254,7 @@ router.get("/:id", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const {
+      search,
       category,
       brand,
       hasPromo,
@@ -269,6 +270,17 @@ router.get("/", async (req, res) => {
 
     // Build filter object
     const filter = {};
+    
+    // Add flexible text search across multiple fields
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { shortDescription: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+        { brand: { $regex: search, $options: 'i' } }
+      ];
+    }
+
     if (category) filter.category = category;
     if (brand) filter.brand = brand;
     if (hasPromo !== undefined) filter.hasPromo = hasPromo === "true";
@@ -312,6 +324,5 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch products", details: err.message });
   }
 });
-
 
 module.exports = router;
