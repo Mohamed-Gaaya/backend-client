@@ -149,6 +149,7 @@ router.put("/:id", upload.array("images", 5), async (req, res) => {
       sizes,
       stock,
     } = req.body;
+    const images = req.files ? req.files.map((file) => `/uploads/${file.filename}`) : [];
 
     const updateData = {
       ...(name && { name }),
@@ -166,7 +167,8 @@ router.put("/:id", upload.array("images", 5), async (req, res) => {
       ...(longDescription && { longDescription }),
       ...(sizes && { sizes: typeof sizes === 'string' ? JSON.parse(sizes) : sizes }),
       ...(flavours && { flavours: typeof flavours === 'string' ? JSON.parse(flavours) : flavours }),
-      ...(stock !== undefined && { stock: Number(stock) })
+      ...(stock !== undefined && { stock: Number(stock) }),
+      ...(images.length > 0 && { images }),
     };
 
     const updatedProduct = await Product.findByIdAndUpdate(
