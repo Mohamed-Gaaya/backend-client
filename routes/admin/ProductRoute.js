@@ -292,7 +292,7 @@ router.get("/", async (req, res) => {
       if (maxPrice !== undefined) filter.price.$lte = Number(maxPrice);
     }
     if (flavours) filter.flavours = { $in: flavours.split(",") };
-    if (sizes) filter.size = { $in: sizes.split(",") };
+    if (sizes) filter.sizes = { $in: sizes.split(",") };
 
     // Calculate skip value for pagination
     const skip = (Number(page) - 1) * Number(limit);
@@ -309,7 +309,7 @@ router.get("/", async (req, res) => {
       .skip(skip)
       .limit(Number(limit))
       .select(
-        "_id name price category brand images hasPromo originalPrice promoPrice shortDescription stock flavours size uploadedDate"
+        "_id name price category brand images hasPromo originalPrice promoPrice shortDescription stock flavours sizes uploadedDate"
       )
       .lean();
 
