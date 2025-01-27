@@ -120,6 +120,17 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch brands", details: err.message });
   }
 });
+router.get("/:name", async (req, res) => {
+  try {
+    const brand = await Brand.findOne({ name: req.params.name });
+    if (!brand) {
+      return res.status(404).json({ error: "Brand not found" });
+    }
+    res.status(200).json({ brand });
+  } catch (err) {
+    res.status(500).json({ error: "Server error", details: err.message });
+  }
+});
 
 
 router.put("/:id", upload.single("image"), async (req, res) => {
