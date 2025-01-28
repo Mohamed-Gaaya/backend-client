@@ -157,10 +157,14 @@ router.put("/:id", upload.array("images", 5), async (req, res) => {
       ...(category && { category }),
       ...(subCategory && { subCategory }),
       ...(brand && { brand }),
-      ...(hasPromo === 'true' && { 
-        hasPromo: true,
+      // Update this section
+      hasPromo: hasPromo === 'true',
+      ...(hasPromo === 'true' ? {
         promoPrice: Number(promoPrice),
         originalPrice: Number(originalPrice)
+      } : {
+        promoPrice: null,
+        originalPrice: null
       }),
       ...(servings && { servings: Number(servings) }),
       ...(shortDescription && { shortDescription }),
@@ -170,6 +174,7 @@ router.put("/:id", upload.array("images", 5), async (req, res) => {
       ...(stock !== undefined && { stock: Number(stock) }),
       ...(images.length > 0 && { images }),
     };
+    
 
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
@@ -282,49 +287,41 @@ router.get("/", async (req, res) => {
         { brand: { $regex: search, $options: 'i' } }
       ];
     }
-    // Updated price filtering logic
+
+    // Handle basic filters
+    if (category) filter.category = category;
+    if (brand) filter.brand = brand;
+    if (hasPromo !== undefined) filter.hasPromo = hasPromo === "true";
+    if (flavours) filter.flavours = { $in: flavours.split(",") };
+    if (sizes) filter.sizes = { $in: sizes.split(",") };
+
+    // Price filtering logic
     if (minPrice !== undefined || maxPrice !== undefined) {
       filter.$or = [
-        // Check regular price
         {
+          // For products without promotion
           hasPromo: false,
           price: {
-            ...(minPrice !== undefined && { $gte: Number(minPrice) }),
-            ...(maxPrice !== undefined && { $lte: Number(maxPrice) })
+            ...(minPrice && { $gte: Number(minPrice) }),
+            ...(maxPrice && { $lte: Number(maxPrice) })
           }
         },
-        // Check promo price for items on promotion
         {
+          // For products with promotion, check the promo price
           hasPromo: true,
           promoPrice: {
-            ...(minPrice !== undefined && { $gte: Number(minPrice) }),
-            ...(maxPrice !== undefined && { $lte: Number(maxPrice) })
+            ...(minPrice && { $gte: Number(minPrice) }),
+            ...(maxPrice && { $lte: Number(maxPrice) })
           }
         }
       ];
     }
 
-    if (category) filter.category = category;
-    if (brand) filter.brand = brand;
-    if (hasPromo !== undefined) filter.hasPromo = hasPromo === "true";
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      filter.price = {};
-      if (minPrice !== undefined) filter.price.$gte = Number(minPrice);
-      if (maxPrice !== undefined) filter.price.$lte = Number(maxPrice);
-    }
-    if (flavours) filter.flavours = { $in: flavours.split(",") };
-    if (sizes) filter.sizes = { $in: sizes.split(",") };
-
-    // Calculate skip value for pagination
+    // Rest of your existing code...
     const skip = (Number(page) - 1) * Number(limit);
-
-    // Sort by uploadedDate in descending order
     const sort = { uploadedDate: -1 };
-
-    // Get total count for pagination
     const total = await Product.countDocuments(filter);
 
-    // Execute query with pagination
     const products = await Product.find(filter)
       .sort(sort)
       .skip(skip)
