@@ -282,6 +282,27 @@ router.get("/", async (req, res) => {
         { brand: { $regex: search, $options: 'i' } }
       ];
     }
+    // Updated price filtering logic
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      filter.$or = [
+        // Check regular price
+        {
+          hasPromo: false,
+          price: {
+            ...(minPrice !== undefined && { $gte: Number(minPrice) }),
+            ...(maxPrice !== undefined && { $lte: Number(maxPrice) })
+          }
+        },
+        // Check promo price for items on promotion
+        {
+          hasPromo: true,
+          promoPrice: {
+            ...(minPrice !== undefined && { $gte: Number(minPrice) }),
+            ...(maxPrice !== undefined && { $lte: Number(maxPrice) })
+          }
+        }
+      ];
+    }
 
     if (category) filter.category = category;
     if (brand) filter.brand = brand;
