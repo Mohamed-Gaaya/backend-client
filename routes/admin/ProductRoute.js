@@ -327,7 +327,7 @@ router.get("/", async (req, res) => {
       .skip(skip)
       .limit(Number(limit))
       .select(
-        "_id name price category brand images hasPromo originalPrice promoPrice shortDescription stock flavours sizes uploadedDate"
+        "_id name price category brand images hasPromo originalPrice promoPrice shortDescription stock flavours sizes uploadedDate servings"
       )
       .lean();
 
