@@ -23,6 +23,7 @@ const brandRoute = require('./routes/admin/BrandRoute');
 const clothesRoute = require('./routes/admin/ClothesRoute');
 const accessoriesRoute = require('./routes/admin/AccessoriesRoute');
 const packRoute = require('./routes/admin/PackRoute');
+const orderRoute = require('./routes/admin/OrderRoute'); 
 
 app.use("/api/categories", categoryRoute);
 app.use("/api/products", productRoute);
@@ -30,6 +31,7 @@ app.use("/api/clothes", clothesRoute);
 app.use("/api/accessories", accessoriesRoute);
 app.use("/api/brands", brandRoute);
 app.use('/api/packs', packRoute);
+app.use('/api/orders', orderRoute);
 app.use("/uploads", express.static("uploads"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
